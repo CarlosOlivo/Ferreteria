@@ -95,4 +95,15 @@ public class Producto implements Serializable {
     this.tipoUnidad = tipoUnidad;
   }
   
+  /**
+   * Vende un producto en existencia.
+   * @return Verdadero en caso exitoso, falso en caso contrario.
+   */
+  public boolean venderProducto() {
+    if(getExistencias() >= 1) {
+      setExistencias(getExistencias() - 1);
+      return true;
+    }
+    return false;
+  }
 }

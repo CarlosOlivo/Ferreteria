@@ -29,8 +29,10 @@ public class Menu {
     System.out.println("3.- Editar producto");
     System.out.println("4.- Buscar producto");
     System.out.println("5.- Calcular costo de inventario");
-    System.out.println("6.- Guardar productos");
-    System.out.println("7.- Cargar productos");
+    System.out.println("6.- Guardar inventario");
+    System.out.println("7.- Cargar inventario");
+    System.out.println("8.- Vender producto");
+    System.out.println("9.- Mostrar venta");
     System.out.println("0.- Salir");
   }
   
@@ -78,10 +80,16 @@ public class Menu {
         productos.calcularCostoInventario();
         break;
       case 6:
-        productos.guardarProductos();
+        productos.guardarInventario();
         break;
       case 7:
-        productos.cargarProductos();
+        productos.cargarInventario();
+        break;
+      case 8:
+        productos.venderProducto();
+        break;
+      case 9:
+        productos.mostrarVentaFolio();
         break;
       case 0:
         System.out.println("Gracias por usar el programa.");

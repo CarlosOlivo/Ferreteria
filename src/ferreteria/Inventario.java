@@ -13,6 +13,7 @@ import java.util.List;
 public class Inventario {
   
   private List<Producto> productos;
+  private List<Venta> ventas;
   private final Entrada teclado;
   private final Archivo archivo;
   
@@ -21,6 +22,7 @@ public class Inventario {
    */
   public Inventario() {
     productos = new ArrayList<>();
+    ventas = new ArrayList<>();
     teclado = new Entrada();
     archivo = new Archivo();
   }
@@ -186,6 +188,19 @@ public class Inventario {
   }
   
   /**
+   * Muestra los datos de una venta en especifico.
+   * @param venta Venta.
+   */
+  private void mostrarVenta(Venta venta) {
+    System.out.println("Folio: #" + venta.getFolio());
+    System.out.print(venta.getProductos());
+    System.out.println("Productos: #" + venta.getCantidad());
+    System.out.println("Subtotal: $" + venta.getSubtotal());
+    System.out.println("IVA 16%: $" + venta.getIVA());
+    System.out.println("Total: $" + calcularTotal(venta.getSubtotal(), venta.getIVA()));
+  }
+  
+  /**
    * Comprueba si existe un producto en el inventario.
    * @param clave Clave del producto.
    * @return Verdadero si exista, falso en caso contrario.
@@ -193,6 +208,20 @@ public class Inventario {
   private boolean existeProducto(int clave) {
     for (Producto producto : productos) {
       if (producto.getClave() == clave) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  /**
+   * Comprueba si existe una venta en el inventario.
+   * @param folio Folio de la venta.
+   * @return Verdadero si exista, falso en caso contrario.
+   */
+  private boolean existeVenta(int folio) {
+    for (Venta venta : ventas) {
+      if (venta.getFolio() == folio) {
         return true;
       }
     }
@@ -218,20 +247,108 @@ public class Inventario {
   }
   
   /**
-   * Guarda los productos del inventario en un archivo.
+   * Guarda el inventario en un archivo.
    */
-  public void guardarProductos() {
-    archivo.guardar(productos);
+  public void guardarInventario() {
+    archivo.guardar(productos, ventas);
   }
   
   /**
-   * Carga los productos del inventario de un archivo.
+   * Carga el inventario de un archivo.
    */
-  public void cargarProductos() {
-    List productosArchivo = archivo.cargar();
-    if (productosArchivo != null) {
-      productos = productosArchivo;
-      System.out.println("Productos cargados correctamente.");
+  public void cargarInventario() {
+    List[] Archivo = archivo.cargar();
+    if (Archivo[0] != null && Archivo[1] != null) {
+      productos = Archivo[0];
+      ventas = Archivo[1];
+      System.out.println("Inventario cargado correctamente.");
     }
+  }
+  
+  /**
+   * Vende un producto del inventario.
+   */
+  public void venderProducto() {
+    boolean existe = false;
+    int opc = 0;
+    int cantidad = 0;
+    int subtotal = 0;
+    String venta = "";
+    do {
+      System.out.print("Clave: #");
+      int clave = teclado.leerEntero();
+      Iterator<Producto> it = productos.iterator();
+      while(it.hasNext()) {
+        existe = false;
+        Producto producto = it.next();
+        if (producto.getClave() == clave) {
+          existe = true;
+          if(producto.venderProducto()) {
+            cantidad++;
+            double precio = producto.getPrecioCompra() * 1.50;
+            venta += producto.getNombre() + " | " + producto.getTipoUnidad() + " | $" + precio + "\n";
+            subtotal += precio;
+          } else {
+            System.out.println("El producto no se encuentra en existencia.");
+          }
+          break;
+        }
+      }
+      if(existe == false) {
+        System.out.println("El producto no existe en el inventario.");
+      }
+      System.out.print("Vender otro producto? 1.- Si 2.- No | ");
+      opc = teclado.leerEntero();
+    } while(opc == 1);
+    if(cantidad >= 1) {
+      ventas.add(new Venta(generarFolio(), venta, cantidad, subtotal, calcularIVA(subtotal)));
+    }
+  }
+  
+  /**
+   * Genera un folio para una venta.
+   * @return Folio.
+   */
+  private int generarFolio() {
+    int folio = 1;
+    if(!ventas.isEmpty()) {
+      folio += ventas.get(ventas.size() - 1).getFolio();
+    }
+    return folio;
+  }
+  
+  /**
+   * Calcula el IVA de una venta.
+   * @param subtotal Subtotal de la venta.
+   * @return IVA de la venta.
+   */
+  private double calcularIVA(double subtotal) {
+    return subtotal * 0.16;
+  }
+  
+  /**
+   * Calcula el total de una venta.
+   * @param subtotal Subtotal de la venta.
+   * @param iva IVA de la venta.
+   * @return Total de la venta.
+   */
+  private double calcularTotal(double subtotal, double iva) {
+    return subtotal + iva;
+  }
+  
+  /**
+   * Muestra un producto por su folio.
+   */
+  public void mostrarVentaFolio() {
+    System.out.print("Folio: #");
+    int folio = teclado.leerEntero();
+    for (Venta venta : ventas) {
+      if(venta.getFolio() == folio) {
+        System.out.println();
+        mostrarVenta(venta);
+        return;
+      }
+    }
+    System.out.println("No existe venta con tal folio en el inventario.");
   }
 }
