@@ -16,7 +16,10 @@
  */
 package ferreteria;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -209,11 +212,12 @@ public class Inventario {
    */
   private void mostrarVenta(Venta venta) {
     System.out.println("Folio: #" + venta.getFolio());
+    System.out.println("Fecha: " + venta.obtenerFecha());
     System.out.print(venta.getProductos());
     System.out.println("Productos: #" + venta.getCantidad());
     System.out.println("Subtotal: $" + venta.getSubtotal());
     System.out.println("IVA 16%: $" + venta.getIVA());
-    System.out.println("Total: $" + calcularTotal(venta.getSubtotal(), venta.getIVA()));
+    System.out.println("Total: $" + venta.calcularTotal());
   }
   
   /**
@@ -278,7 +282,7 @@ public class Inventario {
       productos = Archivo[0];
       ventas = Archivo[1];
       System.out.println("Inventario cargado correctamente.");
-    }
+    } 
   }
   
   /**
@@ -317,7 +321,7 @@ public class Inventario {
       opc = teclado.leerEntero();
     } while(opc == 1);
     if(cantidad >= 1) {
-      ventas.add(new Venta(generarFolio(), venta, cantidad, subtotal, calcularIVA(subtotal)));
+      ventas.add(new Venta(generarFolio(), venta, cantidad, subtotal));
     }
   }
   
@@ -334,25 +338,6 @@ public class Inventario {
   }
   
   /**
-   * Calcula el IVA de una venta.
-   * @param subtotal Subtotal de la venta.
-   * @return IVA de la venta.
-   */
-  private double calcularIVA(double subtotal) {
-    return subtotal * 0.16;
-  }
-  
-  /**
-   * Calcula el total de una venta.
-   * @param subtotal Subtotal de la venta.
-   * @param iva IVA de la venta.
-   * @return Total de la venta.
-   */
-  private double calcularTotal(double subtotal, double iva) {
-    return subtotal + iva;
-  }
-  
-  /**
    * Muestra un producto por su folio.
    */
   public void mostrarVentaFolio() {
@@ -366,5 +351,43 @@ public class Inventario {
       }
     }
     System.out.println("No existe venta con tal folio en el inventario.");
+  }
+  
+  public void mostrarVentas() {
+    System.out.print("Fecha [" + obtenerFechaActual() + "]: ");
+    String fecha = teclado.leerFecha();
+    if("".equals(fecha)) {
+      fecha = obtenerFechaActual();
+    }
+    int numVentas = 0;
+    int numProductos = 0;
+    double ganancias = 0;
+    for (Venta venta : ventas) {
+      if(venta.obtenerFecha().equals(fecha)) {
+        System.out.println();
+        mostrarVenta(venta);
+        numVentas++;
+        numProductos += venta.getCantidad();
+        ganancias += venta.calcularTotal();
+      }
+    }
+    if(numVentas >= 1) {
+      System.out.println();
+      System.out.println("Fecha: " + fecha);
+      System.out.println("Ventas: #" + numVentas);
+      System.out.println("Productos: #" + numProductos);
+      System.out.println("Ganancias: $" + ganancias);
+    } else {
+      System.out.println("No existe ventas con fecha " + fecha + " en el inventario.");
+    }
+  }
+  
+  /**
+   * Devuelve la fecha actual.
+   * @return Fecha en formato dd/MM/yyyy.
+   */
+  private String obtenerFechaActual() {
+    DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    return dateFormat.format(new Date());
   }
 }

@@ -48,7 +48,8 @@ public class Menu {
     System.out.println("6.- Guardar inventario");
     System.out.println("7.- Cargar inventario");
     System.out.println("8.- Vender producto");
-    System.out.println("9.- Mostrar venta");
+    System.out.println("9.- Mostrar venta por folio");
+    System.out.println("10.- Mostrar ventas por fecha");
     System.out.println("0.- Salir");
   }
   
@@ -106,6 +107,9 @@ public class Menu {
         break;
       case 9:
         productos.mostrarVentaFolio();
+        break;
+      case 10:
+        productos.mostrarVentas();
         break;
       case 0:
         System.out.println("Gracias por usar el programa.");

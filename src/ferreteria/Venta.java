@@ -17,6 +17,9 @@
 package ferreteria;
 
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Clase ventas.
@@ -27,10 +30,11 @@ import java.io.Serializable;
 public class Venta implements Serializable {
   
   private int folio;
+  private final Date fecha = new Date();
   private String productos;
   private int cantidad;
   private double subtotal;
-  private double iva;
+  private double iva = 0;
   
   /**
    * Inicializa la clase Venta.
@@ -40,7 +44,6 @@ public class Venta implements Serializable {
     productos = "";
     cantidad = 0;
     subtotal = 0;
-    iva = 0;
   }
   
   /**
@@ -49,14 +52,13 @@ public class Venta implements Serializable {
    * @param productos Lista de productos.
    * @param cantidad Cantidad de productos.
    * @param subtotal Subtotal de la venta.
-   * @param iva IVA de la venta.
    */
-  public Venta(int folio, String productos, int cantidad, double subtotal, double iva) {
+  public Venta(int folio, String productos, int cantidad, double subtotal) {
     this.folio = folio;
     this.productos = productos;
     this.cantidad = cantidad;
     this.subtotal = subtotal;
-    this.iva = iva;
+    calcularIVA();
   }
 
   public int getFolio() {
@@ -70,7 +72,7 @@ public class Venta implements Serializable {
   public String getProductos() {
     return productos;
   }
-
+  
   public void setProductos(String productos) {
     this.productos = productos;
   }
@@ -97,5 +99,29 @@ public class Venta implements Serializable {
 
   public void setIVA(double iva) {
     this.iva = iva;
+  }
+  
+  /**
+   * Calcula el IVA de una venta
+   */
+  private void calcularIVA() {
+    iva = subtotal * 0.16;
+  }
+  
+  /**
+   * Calcula el total de una venta.
+   * @return Total de la venta.
+   */
+  public double calcularTotal() {
+    return subtotal + iva;
+  }
+  
+  /**
+   * Obtiene la fecha de la venta.
+   * @return Fecha de la venta.
+   */
+  public String obtenerFecha() {
+    DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    return dateFormat.format(fecha);
   }
 }

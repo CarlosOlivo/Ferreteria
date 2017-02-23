@@ -63,4 +63,14 @@ public class Entrada {
   public String leerCadena() {
     return sc.nextLine();
   }
+  
+  /**
+   * Lee una fecha desde el teclado
+   * 
+   * @return Fecha tipo String.
+   */
+  public String leerFecha() {
+    // TO-DO: Validar fecha
+    return sc.nextLine();
+  }
 }
