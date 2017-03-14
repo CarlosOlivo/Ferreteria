@@ -22,15 +22,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 /**
  * Clase que lleva el control de Archivos.
  * 
  * @author Carlos Olivo
  * @version 0.1
+ * @param <T> Tipo.
  */
-public class Archivo {
+public class Archivo<T> {
   
   private FileOutputStream fos;
   private ObjectOutputStream oos;
@@ -49,18 +53,16 @@ public class Archivo {
   
   /**
    * Guarda una lista de productos a un archivo.
-   * @param productos Productos a guardar.
-   * @param ventas Ventas a guardar.
+   * @param lista Lista a guardar.
+   * @param nombre Nombre del archivo.
    */
-  public void guardar(List productos, List ventas) {
+  public <T> void guardar(ObservableList<T> lista, String nombre) {
     try {
-      fos = new FileOutputStream("Ferreteria");
+      fos = new FileOutputStream(nombre);
       oos = new ObjectOutputStream(fos);
-      oos.writeObject(productos);
-      oos.writeObject(ventas);
+      oos.writeObject(new ArrayList<>(lista));
       oos.close();
       fos.close();
-      System.out.println("Productos guardados correctamente.");
     } catch(FileNotFoundException e) {
       System.out.println("ERROR: " + e.getLocalizedMessage());
     } catch(IOException e) {
@@ -69,16 +71,17 @@ public class Archivo {
   }
   
   /**
-   * Carga una lista de productos y ventas desde un archivo.
-   * @return Productos y ventas del archivo.
+   * Carga una lista desde un archivo.
+   * @param archivo Nombre del archivo.
+   * @return Lista del archivo.
    */
-  public List[] cargar() {
-    List[] productos = {null, null};
+  public ObservableList<T> cargar(String archivo) {
+    ObservableList<T> productos = FXCollections.observableArrayList();
     try {
-      fis = new FileInputStream("Ferreteria");
+      fis = new FileInputStream(archivo);
       ois = new ObjectInputStream(fis);
-      productos[0] = (List) ois.readObject();
-      productos[1] = (List) ois.readObject();
+      List<T> lista = (List<T>) ois.readObject();
+      productos = FXCollections.observableList(lista);
       ois.close();
       fis.close();
     } catch(FileNotFoundException e) {

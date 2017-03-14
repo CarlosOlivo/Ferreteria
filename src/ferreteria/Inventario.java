@@ -16,6 +16,8 @@
  */
 package ferreteria;
 
+import ferreteria.Modelo.Venta;
+import ferreteria.Modelo.Producto;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -212,12 +214,12 @@ public class Inventario {
    */
   private void mostrarVenta(Venta venta) {
     System.out.println("Folio: #" + venta.getFolio());
-    System.out.println("Fecha: " + venta.obtenerFecha());
+    System.out.println("Fecha: " + venta.getFecha());
     System.out.print(venta.getProductos());
     System.out.println("Productos: #" + venta.getCantidad());
     System.out.println("Subtotal: $" + venta.getSubtotal());
-    System.out.println("IVA 16%: $" + venta.getIVA());
-    System.out.println("Total: $" + venta.calcularTotal());
+    //System.out.println("IVA 16%: $" + venta.getIVA());
+    //System.out.println("Total: $" + venta.calcularTotal());
   }
   
   /**
@@ -270,19 +272,19 @@ public class Inventario {
    * Guarda el inventario en un archivo.
    */
   public void guardarInventario() {
-    archivo.guardar(productos, ventas);
+    //archivo.guardar(productos, ventas);
   }
   
   /**
    * Carga el inventario de un archivo.
    */
   public void cargarInventario() {
-    List[] Archivo = archivo.cargar();
-    if (Archivo[0] != null && Archivo[1] != null) {
-      productos = Archivo[0];
-      ventas = Archivo[1];
-      System.out.println("Inventario cargado correctamente.");
-    } 
+    //List[] Archivo = archivo.cargar();
+    //if (Archivo[0] != null && Archivo[1] != null) {
+    //  productos = Archivo[0];
+    //  ventas = Archivo[1];
+    //  System.out.println("Inventario cargado correctamente.");
+    //} 
   }
   
   /**
@@ -363,12 +365,12 @@ public class Inventario {
     int numProductos = 0;
     double ganancias = 0;
     for (Venta venta : ventas) {
-      if(venta.obtenerFecha().equals(fecha)) {
+      if(venta.getFecha().equals(fecha)) {
         System.out.println();
         mostrarVenta(venta);
         numVentas++;
         numProductos += venta.getCantidad();
-        ganancias += venta.calcularTotal();
+        //ganancias += venta.calcularTotal();
       }
     }
     if(numVentas >= 1) {
