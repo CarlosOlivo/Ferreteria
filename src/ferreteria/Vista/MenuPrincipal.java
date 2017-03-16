@@ -19,6 +19,7 @@ package ferreteria.Vista;
 import ferreteria.Archivo;
 import ferreteria.Modelo.Producto;
 import static ferreteria.Util.esProducto;
+import static ferreteria.Util.verProducto;
 import static ferreteria.Util.mostrarConfirmacion;
 import static ferreteria.Util.mostrarError;
 import static ferreteria.Util.mostrarInfo;
@@ -28,15 +29,20 @@ import static ferreteria.Util.redondear;
 import java.util.Iterator;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -65,7 +71,16 @@ public class MenuPrincipal extends Application {
   @Override
   public void start(Stage stage) {
     this.stage = stage;
-    cargar();
+    validar();
+  }
+  
+  private void validar() {
+    if(stage.getUserData() == null) {
+      mostrarError("Autentificaci\u00F3n requerida");
+      stage.close();
+    } else {
+      cargar();
+    }
   }
   
   private void cargar() {
@@ -119,9 +134,39 @@ public class MenuPrincipal extends Application {
     TableColumn unidad = new TableColumn("Unidad");
     unidad.setCellValueFactory(new PropertyValueFactory("tipoUnidad"));
     tablaProductos.getColumns().add(unidad);
+    
+    tablaProductos.setRowFactory((TableView<Producto> tableView) -> {
+      final TableRow<Producto> row = new TableRow<>();
+      final ContextMenu contextMenu = new ContextMenu();
+      
+      final MenuItem mostrar = new MenuItem("Mostrar");
+      mostrar.setOnAction((ActionEvent) -> {
+        verProducto(row.getItem());
+      });
+      contextMenu.getItems().add(mostrar);
+      
+      final MenuItem editar = new MenuItem("Editar");
+      editar.setOnAction((ActionEvent) -> {
+        editarProducto(row.getItem());
+      });
+      contextMenu.getItems().add(editar);
+      
+      final MenuItem eliminar = new MenuItem("Eliminar");
+      eliminar.setOnAction((ActionEvent) -> {
+        eliminarProducto(row.getItem());
+      });
+      contextMenu.getItems().add(eliminar);
+      
+      row.contextMenuProperty().bind(
+          Bindings.when(row.emptyProperty())
+              .then((ContextMenu)null)
+              .otherwise(contextMenu)
+      );
+      return row ;
+    });  
   }
   
-  public void crearTablaVentas() {
+  private void crearTablaVentas() {
     tablaVentas = new TableView<>(ventas);
     tablaVentas.setPlaceholder(new Text("Sin ventas..."));
     
@@ -150,7 +195,7 @@ public class MenuPrincipal extends Application {
     tablaVentas.getColumns().add(subtotal);
   }
   
-  public Scene menu() {
+  private Scene menu() {
     bp = new BorderPane();
     bp.setLeft(opciones());
     
@@ -162,7 +207,7 @@ public class MenuPrincipal extends Application {
     return new Scene(bp, 1000, 500);
   }
   
-  public VBox opciones() {
+  private VBox opciones() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(10));
     
@@ -195,24 +240,18 @@ public class MenuPrincipal extends Application {
       bp.setRight(agregarProducto());
     });
     vb.getChildren().add(agregar);
-    
-    Hyperlink editar = new Hyperlink("Editar");
-    editar.setOnAction((ActionEvent) -> {
-      editarProducto();
-    });
-    vb.getChildren().add(editar);
-    
-    Hyperlink eliminar = new Hyperlink("Eliminar");
-    eliminar.setOnAction((ActionEvent) -> {
-      eliminarProducto();
-    });
-    vb.getChildren().add(eliminar);
-    
+   
     Hyperlink inventario = new Hyperlink("Inventario");
     inventario.setOnAction((ActionEvent) -> {
       calcularInventario();
     });
     vb.getChildren().add(inventario);
+    
+    Hyperlink buscar = new Hyperlink("Buscar");
+    buscar.setOnAction((ActionEvent) -> {
+      bp.setRight(buscarProducto());
+    });
+    vb.getChildren().add(buscar);
     
     Hyperlink vender = new Hyperlink("Vender");
     vender.setOnAction((ActionEvent) -> {
@@ -228,7 +267,7 @@ public class MenuPrincipal extends Application {
     return vb;
   }
   
-  public VBox agregarProducto() {
+  private VBox agregarProducto() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(5));
     vb.setSpacing(5);
@@ -303,30 +342,79 @@ public class MenuPrincipal extends Application {
     return vb;
   }
   
-  public void editarProducto() {
-    Producto producto = tablaProductos.getSelectionModel().getSelectedItem();
-    if(producto == null) {
-      mostrarError("Selecciona un producto para editar.");
-      return;
-    }
+  private void editarProducto(Producto producto) {
     EditarProducto eP = new EditarProducto();
     if(eP.cargar(stage, producto)) {
       tablaProductos.refresh();
     }
   }
   
-  public void eliminarProducto() {
-    int seleccion = tablaProductos.getSelectionModel().getSelectedIndex();
-    if(seleccion >= 0) {
-      if(mostrarConfirmacion("Estas seguro de eliminar el producto con el ID #" + tablaProductos.getItems().get(seleccion).getClave() + "?")) {
-        tablaProductos.getItems().remove(seleccion);
+  private VBox buscarProducto() {
+    VBox vb = new VBox();
+    vb.setPadding(new Insets(5));
+    vb.setSpacing(5);
+    vb.setAlignment(Pos.TOP_CENTER);
+    
+    Text titulo = new Text("Buscar producto");
+    titulo.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+    vb.getChildren().add(titulo);
+    
+    ComboBox<String> opciones = new ComboBox<>();
+    opciones.getItems().addAll("Clave", "Nombre", "Descripcion");
+    opciones.setValue("Clave");
+    vb.getChildren().add(opciones);
+    
+    TextField campo = new TextField();
+    vb.getChildren().add(campo);
+    
+    HBox hb = new HBox();
+    hb.setSpacing(5);
+    hb.setAlignment(Pos.CENTER);
+    
+    Button agregar = new Button("Mostrar");
+    agregar.setOnAction((ActionEvent) -> {
+      if("".equals(campo.getText())) {
+        mostrarInfo("Introduce un dato para continuar.");
+        return;
       }
-    } else {
-      mostrarError("Selecciona un producto para elmininar.");
+      switch(opciones.getSelectionModel().getSelectedItem()) {
+        case "Clave":
+          if(!esEntero(campo.getText())) {
+            mostrarError("Introduce un n\u00FAmero entero valido.");
+            return;
+          }
+          buscarProductoClave(Integer.parseInt(campo.getText()));
+          break;
+        case "Nombre":
+          buscarProductoNombre(campo.getText());
+          break;
+        case "Descripcion":
+          buscarProductoDescripcion(campo.getText());
+          break;
+        default:
+          mostrarError("Opci\u00F3n invalida");
+          break;
+      }
+    });
+    hb.getChildren().add(agregar);
+    
+    Button cerrar = new Button("Cerrar");
+    cerrar.setOnAction((ActionEvent) -> {
+      bp.setRight(null);
+    });
+    hb.getChildren().add(cerrar);
+    
+    vb.getChildren().add(hb);
+    return vb;
+  }
+  
+  private void eliminarProducto(Producto producto) {
+    if(mostrarConfirmacion("Estas seguro de eliminar el producto con el ID #" + producto.getClave() + "?")) {
+      tablaProductos.getItems().remove(producto);
     }
   }
   
-  public VBox venderProducto() {
+  private VBox venderProducto() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(5));
     vb.setSpacing(5);
@@ -387,7 +475,7 @@ public class MenuPrincipal extends Application {
    * @param clave Clave del producto
    * @return Nota de venta
    */
-  public String vendeProducto(int clave) {
+  private String vendeProducto(int clave) {
     Iterator<Producto> it = productos.iterator();
     while(it.hasNext()) {
       existe = false;
@@ -429,7 +517,7 @@ public class MenuPrincipal extends Application {
   /**
    * Calcula el valor del inventario.
    */
-  public void calcularInventario() {
+  private void calcularInventario() {
     int numProductos = 0;
     int numExistencias = 0;
     double costos = 0;
@@ -455,6 +543,48 @@ public class MenuPrincipal extends Application {
       folio += ventas.get(ventas.size() - 1).getFolio();
     }
     return folio;
+  }
+  
+   /**
+   * Busca un producto en el inventario por su clave.
+   * @param clave Clave del producto.
+   */
+  private void buscarProductoClave(int clave) {
+    for (Producto producto : productos) {
+      if (producto.getClave() == clave) {
+        verProducto(producto);
+        return;
+      }
+    }
+    mostrarError("No existe producto con tal clave en el inventario.");
+  }
+  
+  /**
+   * Busca un producto en el inventario por su nombre.
+   * @param nombre Nombre del producto.
+   */
+  private void buscarProductoNombre(String nombre) {
+    for (Producto producto : productos) {
+      if (producto.getNombre().equals(nombre)) {
+        verProducto(producto);
+        return;
+      }
+    }
+    mostrarError("No existe producto con tal nombre en el inventario.");
+  }
+  
+  /**
+   * Busca un producto en el inventario por su descripción.
+   * @param descripcion Descripción del producto.
+   */
+  private void buscarProductoDescripcion(String descripcion) {
+    for (Producto producto : productos) {
+      if (producto.getDescripcion().equals(descripcion)) {
+        verProducto(producto);
+        return;
+      }
+    }
+    mostrarError("No existe producto con tal descripcion en el inventario.");
   }
   
   public static void main(String[] args) {

@@ -17,7 +17,6 @@
 package ferreteria.Modelo;
 
 import static ferreteria.Util.obtenerFechaActual;
-import static ferreteria.Util.redondear;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;

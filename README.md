@@ -11,12 +11,12 @@ Control de inventario de una ferreteria en Java.
 - Productos
   - [x] Agregar productos
   - Buscar productos
-    - [ ] Por clave
-    - [ ] Por nombre
-    - [ ] Por descripción
+    - [x] Por clave
+    - [x] Por nombre
+    - [x] Por descripción
   - [x] Editar productos
   - [x] Eliminar productos
-  - [ ] Mostrar productos
+  - [x] Mostrar productos
 - Ventas
   - Mostrar venta
     - [ ] Por folio

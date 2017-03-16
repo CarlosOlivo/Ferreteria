@@ -56,7 +56,7 @@ public class Archivo<T> {
    * @param lista Lista a guardar.
    * @param nombre Nombre del archivo.
    */
-  public <T> void guardar(ObservableList<T> lista, String nombre) {
+  public void guardar(ObservableList<T> lista, String nombre) {
     try {
       fos = new FileOutputStream(nombre);
       oos = new ObjectOutputStream(fos);
@@ -64,9 +64,9 @@ public class Archivo<T> {
       oos.close();
       fos.close();
     } catch(FileNotFoundException e) {
-      System.out.println("ERROR: " + e.getLocalizedMessage());
+      System.err.println("ERROR: " + e.getLocalizedMessage());
     } catch(IOException e) {
-      System.out.println("ERROR: " + e.getLocalizedMessage());
+      System.err.println("ERROR: " + e.getLocalizedMessage());
     }
   }
   
@@ -85,9 +85,9 @@ public class Archivo<T> {
       ois.close();
       fis.close();
     } catch(FileNotFoundException e) {
-      System.out.println("ERROR: " + e.getLocalizedMessage());
+      System.err.println("ERROR: " + e.getLocalizedMessage());
     } catch(IOException | ClassNotFoundException e) {
-      System.out.println("ERROR: " + e.getLocalizedMessage());
+      System.err.println("ERROR: " + e.getLocalizedMessage());
     }
     return productos;
   }

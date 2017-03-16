@@ -16,6 +16,7 @@
  */
 package ferreteria;
 
+import ferreteria.Modelo.Producto;
 import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -168,6 +169,20 @@ public class Util {
     return true;
   }
   
+   /**
+   * Muestra los datos de un producto en especifico.
+   * @param producto Producto.
+   */
+  public static void verProducto(Producto producto) {
+    String msg = "Clave: #" + producto.getClave();
+    msg += "\nNombre: " + producto.getNombre();
+    msg += "\nDescripcion: " + producto.getDescripcion();
+    msg += "\nPrecio de compra: $" + producto.getPrecioCompra();
+    msg += "\nExistencias: " + producto.getExistencias();
+    msg += "\nUnidad: " + producto.getTipoUnidad();
+    mostrarInfo(msg);
+  }
+  
   /**
    * Devuelve la fecha actual.
    * @return Fecha en formato dd/MM/yyyy.
@@ -184,7 +199,7 @@ public class Util {
    */
   public static double redondear(double d) {
     DecimalFormat df = new DecimalFormat("#.##");
-    df.setRoundingMode(RoundingMode.CEILING);
+    df.setRoundingMode(RoundingMode.DOWN);
     return Double.parseDouble(df.format(d));
   }
   

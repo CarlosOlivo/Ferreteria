@@ -39,7 +39,7 @@ import javafx.stage.Stage;
  */
 public class Login extends Application {
   
-  private final String[][] users = {{"admin","21232f297a57a5a743894a0e4a801fc3"},{"user","ee11cbb19052e40b07aac0ca060c23ee"}};
+  private final String[][] users = {{"admin","21232f297a57a5a743894a0e4a801fc3","true"},{"user","ee11cbb19052e40b07aac0ca060c23ee","false"}};
   private Stage stage;
 
   @Override
@@ -88,6 +88,7 @@ public class Login extends Application {
             if(user[0].equals(userTF.getText())) {
               if(user[1].equals(calcularMD5(pwPF.getText()))) {
                 txt.setText("Cargando...");
+                stage.setUserData(user[2]);
                 Platform.runLater(() -> {
                   new MenuPrincipal().start(stage);
                 });
