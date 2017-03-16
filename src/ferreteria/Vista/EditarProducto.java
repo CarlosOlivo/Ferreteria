@@ -32,7 +32,8 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- *
+ * Clase encargada de editar un producto.
+ * 
  * @author Carlos Olivo
  * @version 0.1
  */
@@ -48,6 +49,12 @@ public class EditarProducto extends Application {
     this.stage = stage;
   }
   
+  /**
+   * Carga el escenario con el producto a editar.
+   * @param primaryStage Escenario.
+   * @param producto Producto.
+   * @return Verdadero si hubo cambios, falso en caso contrario.
+   */
   public boolean cargar(Stage primaryStage, Producto producto) {
     this.producto = producto;
     stage = new Stage();
@@ -62,6 +69,10 @@ public class EditarProducto extends Application {
     return guardarCambios;
   }
   
+  /**
+   * Crea la escena para cargar la ventana de edición de producto.
+   * @return Escena editar producto.
+   */
   private Scene eP() {
     GridPane grid = new GridPane();
     grid.setAlignment(Pos.CENTER);
@@ -132,6 +143,9 @@ public class EditarProducto extends Application {
     return new Scene(grid, 265, 250);
   }
   
+  /**
+   * Guarda los cambios de un producto si es valido.
+   */
   public void guardarProducto() {
     if(esProducto(clave, nombre, descripcion, precio, existencias, unidad)) {
       producto.setNombre(nombre.getText());
@@ -142,10 +156,5 @@ public class EditarProducto extends Application {
       guardarCambios = true;
       stage.close();
     }
-  }
-  
-  public static void main(String[] args) {
-    launch(args);
-  }
-  
+  }  
 }

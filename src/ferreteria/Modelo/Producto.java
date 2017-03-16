@@ -73,7 +73,7 @@ public class Producto implements Externalizable {
     return clave.get();
   }
 
-  public void setClave(int clave) {
+  private void setClave(int clave) {
     this.clave.set(clave);
   }
 

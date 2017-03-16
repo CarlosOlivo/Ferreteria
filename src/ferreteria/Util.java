@@ -17,6 +17,7 @@
 package ferreteria;
 
 import ferreteria.Modelo.Producto;
+import ferreteria.Modelo.Venta;
 import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -28,6 +29,7 @@ import java.util.Date;
 import java.util.Optional;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.StageStyle;
 
@@ -104,11 +106,28 @@ public class Util {
    * @param msg Mensaje a mostrar.
    */
   public static void mostrarInfo(String msg) {
-    Alert error = new Alert(Alert.AlertType.INFORMATION);
-    error.initStyle(StageStyle.UTILITY);
-    error.setHeaderText(null);
-    error.setContentText(msg);
-    error.show();
+    Alert info = new Alert(Alert.AlertType.INFORMATION);
+    info.initStyle(StageStyle.UTILITY);
+    info.setHeaderText(null);
+    info.setContentText(msg);
+    info.show();
+  }
+  
+  /**
+   * Muestra una nota de venta.
+   * @param msg Venta a mostrar.
+   */
+  private static void mostrarNota(String msg) {
+    Alert nota = new Alert(Alert.AlertType.NONE);
+    nota.initStyle(StageStyle.UTILITY);
+    nota.setTitle("Nota de venta");
+    nota.setHeaderText(null);
+    nota.setGraphic(null);
+    Label venta = new Label(msg);
+    venta.setWrapText(true);
+    nota.getDialogPane().setContent(venta);
+    nota.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+    nota.show();
   }
   
   /**
@@ -181,6 +200,20 @@ public class Util {
     msg += "\nExistencias: " + producto.getExistencias();
     msg += "\nUnidad: " + producto.getTipoUnidad();
     mostrarInfo(msg);
+  }
+  
+  public static void verVenta(Venta venta) {
+    String msg = " -=-=-=- Ferreteria -=-=-=-";
+    msg += "\nFolio: #" + venta.getFolio() + " - Fecha: " + venta.getFecha();
+    msg += "\n -=-=-=-=-=-=-=-=-=-=-=-";
+    msg += "\nProducto | Cantidad | Precio";
+    msg += "\n" + venta.getProductos();
+    msg += " -=-=-=-=-=-=-=-=-=-=-=-";
+    msg += "\n             Productos: #" + venta.getCantidad();
+    msg += "\n               Subtotal: $" + venta.getSubtotal();
+    msg += "\n                      IVA: $" + venta.getIVA();
+    msg += "\n                    Total: $" + venta.getTotal();
+    mostrarNota(msg);
   }
   
   /**

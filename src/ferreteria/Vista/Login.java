@@ -33,7 +33,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- *
+ * Clase encargada de la autentificación en el sistema.
+ * 
  * @author Carlos Olivo
  * @version 0.1
  */
@@ -53,6 +54,10 @@ public class Login extends Application {
     this.stage.show();
   }
   
+  /**
+   * Crea la escena para la autentificación en el sistema.
+   * @return Escena.
+   */
   public Scene login() {    
     GridPane grid = new GridPane();
     grid.getStyleClass().add("background");
@@ -110,10 +115,5 @@ public class Login extends Application {
     });
     
     return new Scene(grid, 300, 150);
-  } 
-  
-  public static void main(String[] args) {
-    launch(args);
   }
-  
 }

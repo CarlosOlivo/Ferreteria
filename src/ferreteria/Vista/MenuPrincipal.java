@@ -26,21 +26,25 @@ import static ferreteria.Util.mostrarInfo;
 import ferreteria.Modelo.Venta;
 import static ferreteria.Util.esEntero;
 import static ferreteria.Util.redondear;
+import static ferreteria.Util.verVenta;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import javafx.application.Application;
-import static javafx.application.Application.launch;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
@@ -56,8 +60,10 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 /**
- *
+ * Clase grafica principal.
+ * 
  * @author Carlos Olivo
+ * @version 0.1
  */
 public class MenuPrincipal extends Application {
   
@@ -74,6 +80,9 @@ public class MenuPrincipal extends Application {
     validar();
   }
   
+  /**
+   * Valida que no sea un usuario inexistente.
+   */
   private void validar() {
     if(stage.getUserData() == null) {
       mostrarError("Autentificaci\u00F3n requerida");
@@ -83,6 +92,9 @@ public class MenuPrincipal extends Application {
     }
   }
   
+  /**
+   * Prepara al escenario para iniciar.
+   */
   private void cargar() {
     productos = new Archivo<Producto>().cargar("Productos");
     ventas = new Archivo<Venta>().cargar("Ventas");
@@ -93,11 +105,16 @@ public class MenuPrincipal extends Application {
     //stage.getScene().getStylesheets().add("file:resources/DarkTheme.css");
     stage.centerOnScreen();
     stage.setOnCloseRequest((EventHandler) -> {
-      guardar();
+      if(esAdmin()) {
+        guardar();
+      }
     });
     stage.show();
   }
   
+  /**
+   * Guarda los productos y las ventas.
+   */
   private void guardar() {
     if(productos != null) {
       new Archivo<Producto>().guardar(productos, "Productos");
@@ -107,6 +124,9 @@ public class MenuPrincipal extends Application {
     }
   }
   
+  /**
+   * Crea la tabla productos.
+   */
   public void crearTablaProductos() {
     tablaProductos = new TableView<>(productos);
     tablaProductos.setPlaceholder(new Text("Sin productos..."));
@@ -149,13 +169,17 @@ public class MenuPrincipal extends Application {
       editar.setOnAction((ActionEvent) -> {
         editarProducto(row.getItem());
       });
-      contextMenu.getItems().add(editar);
+      if(esAdmin()) {
+        contextMenu.getItems().add(editar);
+      }
       
       final MenuItem eliminar = new MenuItem("Eliminar");
       eliminar.setOnAction((ActionEvent) -> {
         eliminarProducto(row.getItem());
       });
-      contextMenu.getItems().add(eliminar);
+      if(esAdmin()) {
+        contextMenu.getItems().add(eliminar);
+      }
       
       row.contextMenuProperty().bind(
           Bindings.when(row.emptyProperty())
@@ -166,6 +190,9 @@ public class MenuPrincipal extends Application {
     });  
   }
   
+  /**
+   * Crea la tabla ventas.
+   */
   private void crearTablaVentas() {
     tablaVentas = new TableView<>(ventas);
     tablaVentas.setPlaceholder(new Text("Sin ventas..."));
@@ -186,15 +213,41 @@ public class MenuPrincipal extends Application {
     cantidad.setCellValueFactory(new PropertyValueFactory("cantidad"));
     tablaVentas.getColumns().add(cantidad);
     
-    //TableColumn iva = new TableColumn("IVA");
-    //iva.setCellValueFactory(new PropertyValueFactory("iva"));
-    //tablaVentas.getColumns().add(iva);
-    
     TableColumn subtotal = new TableColumn("Subtotal");
     subtotal.setCellValueFactory(new PropertyValueFactory("subtotal"));
     tablaVentas.getColumns().add(subtotal);
+    
+    TableColumn iva = new TableColumn("IVA");
+    iva.setCellValueFactory(new PropertyValueFactory("IVA"));
+    tablaVentas.getColumns().add(iva);
+    
+    TableColumn total = new TableColumn("Total");
+    total.setCellValueFactory(new PropertyValueFactory("total"));
+    tablaVentas.getColumns().add(total);
+    
+    tablaVentas.setRowFactory((TableView<Venta> tableView) -> {
+      final TableRow<Venta> row = new TableRow<>();
+      final ContextMenu contextMenu = new ContextMenu();
+      
+      final MenuItem mostrar = new MenuItem("Mostrar");
+      mostrar.setOnAction((ActionEvent) -> {
+        verVenta(row.getItem());
+      });
+      contextMenu.getItems().add(mostrar);
+      
+      row.contextMenuProperty().bind(
+          Bindings.when(row.emptyProperty())
+              .then((ContextMenu)null)
+              .otherwise(contextMenu)
+      );
+      return row ;
+    });  
   }
   
+  /**
+   * Crea la escena principal.
+   * @return Escena.
+   */
   private Scene menu() {
     bp = new BorderPane();
     bp.setLeft(opciones());
@@ -207,6 +260,10 @@ public class MenuPrincipal extends Application {
     return new Scene(bp, 1000, 500);
   }
   
+  /**
+   * Panel de opciones.
+   * @return Panel.
+   */
   private VBox opciones() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(10));
@@ -219,10 +276,12 @@ public class MenuPrincipal extends Application {
         case "Productos":
           stage.setTitle("Ferreteria - Productos");
           bp.setCenter(tablaProductos);
+          bp.setBottom(null);
           break;
         case "Ventas":
           stage.setTitle("Ferreteria - Ventas");
           bp.setCenter(tablaVentas);
+          bp.setBottom(filtrarFecha());
           break;
         default:
           mostrarError("Opci\u00F3n invalida");
@@ -230,6 +289,10 @@ public class MenuPrincipal extends Application {
       bp.setRight(null);
     });
     vb.getChildren().add(opciones);
+    
+    Separator separador = new Separator();
+    separador.setPadding(new Insets(5));
+    vb.getChildren().add(separador);
     
     Text titulo1 = new Text("Productos");
     titulo1.setFont(Font.font("Arial", FontWeight.BOLD, 14));
@@ -239,7 +302,9 @@ public class MenuPrincipal extends Application {
     agregar.setOnAction((ActionEvent) -> {
       bp.setRight(agregarProducto());
     });
-    vb.getChildren().add(agregar);
+    if(esAdmin()) {
+      vb.getChildren().add(agregar);
+    }
    
     Hyperlink inventario = new Hyperlink("Inventario");
     inventario.setOnAction((ActionEvent) -> {
@@ -258,15 +323,16 @@ public class MenuPrincipal extends Application {
       bp.getLeft().setDisable(true);
       bp.setRight(venderProducto());
     });
-    vb.getChildren().add(vender);
-    
-    Text titulo2 = new Text("Ventas");
-    titulo2.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-    vb.getChildren().add(titulo2);
-    
+    if(esAdmin()) {
+      vb.getChildren().add(vender);
+    }
     return vb;
   }
   
+  /**
+   * Panel para agregar un producto.
+   * @return Panel.
+   */
   private VBox agregarProducto() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(5));
@@ -349,6 +415,10 @@ public class MenuPrincipal extends Application {
     }
   }
   
+  /**
+   * Panel para buscar un producto.
+   * @return Panel.
+   */
   private VBox buscarProducto() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(5));
@@ -395,6 +465,7 @@ public class MenuPrincipal extends Application {
           mostrarError("Opci\u00F3n invalida");
           break;
       }
+      campo.clear();
     });
     hb.getChildren().add(agregar);
     
@@ -408,12 +479,20 @@ public class MenuPrincipal extends Application {
     return vb;
   }
   
+  /**
+   * Elimina un producto del sistema.
+   * @param producto Producto a eliminar.
+   */
   private void eliminarProducto(Producto producto) {
     if(mostrarConfirmacion("Estas seguro de eliminar el producto con el ID #" + producto.getClave() + "?")) {
       tablaProductos.getItems().remove(producto);
     }
   }
   
+  /**
+   * Panel para vender un producto.
+   * @return Panel.
+   */
   private VBox venderProducto() {
     VBox vb = new VBox();
     vb.setPadding(new Insets(5));
@@ -437,13 +516,13 @@ public class MenuPrincipal extends Application {
     
     Button listo = new Button("Listo");
     listo.setOnAction((ActionEvent) -> {
-      if(cantidad >= 1) {
-        ventas.add(new Venta(generarFolio(), venta, cantidad, redondear(subtotal)));
+      if(cantidadP >= 1) {
+        ventas.add(new Venta(generarFolio(), ventaP, cantidadP, redondear(subtotalP), 0.16));
       }
-      existe = false;
-      cantidad = 0;
-      subtotal = 0;
-      venta = "";
+      existeP = false;
+      cantidadP = 0;
+      subtotalP = 0;
+      ventaP = "";
       bp.getLeft().setDisable(false);
       bp.setRight(null);
       tablaProductos.refresh();
@@ -466,10 +545,10 @@ public class MenuPrincipal extends Application {
     return vb;
   }
   
-  protected boolean existe = false;
-  protected int cantidad = 0;
-  protected double subtotal = 0;
-  protected String venta = "";
+  protected boolean existeP = false;
+  protected int cantidadP = 0;
+  protected double subtotalP = 0;
+  protected String ventaP = "";
   /**
    * Vende productos del inventario.
    * @param clave Clave del producto
@@ -478,26 +557,26 @@ public class MenuPrincipal extends Application {
   private String vendeProducto(int clave) {
     Iterator<Producto> it = productos.iterator();
     while(it.hasNext()) {
-      existe = false;
+      existeP = false;
       Producto producto = it.next();
       if (producto.getClave() == clave) {
-        existe = true;
+        existeP = true;
         if(producto.venderProducto()) {
-          cantidad++;
+          cantidadP++;
           double precio = producto.getPrecioCompra() * 1.50;
           precio = redondear(precio);
-          venta += producto.getNombre() + " | " + producto.getTipoUnidad() + " | $" + precio + "\n";
-          subtotal += precio;
+          ventaP += producto.getNombre() + " | " + producto.getTipoUnidad() + " | $" + precio + "\n";
+          subtotalP += precio;
         } else {
           mostrarError("El producto no se encuentra en existencia.");
         }
         break;
       }
     }
-    if(existe == false) {
+    if(existeP == false) {
       mostrarError("El producto no existe en el inventario.");
     }
-    return venta;
+    return ventaP;
   }
   
   /**
@@ -545,6 +624,14 @@ public class MenuPrincipal extends Application {
     return folio;
   }
   
+  /**
+   * Comprueba si el usuario tiene permisos administrativos.
+   * @return Verdadero si es administrador, falso en caso contrario.
+   */
+  private boolean esAdmin() {
+    return stage.getUserData() == "true";
+  }
+  
    /**
    * Busca un producto en el inventario por su clave.
    * @param clave Clave del producto.
@@ -587,8 +674,63 @@ public class MenuPrincipal extends Application {
     mostrarError("No existe producto con tal descripcion en el inventario.");
   }
   
-  public static void main(String[] args) {
-    launch(args);
+  /**
+   * Panel para filtrar las ventas por fecha.
+   * @return Panel.
+   */
+  private HBox filtrarFecha() {
+    HBox hb = new HBox();
+    hb.setSpacing(5);
+    hb.setAlignment(Pos.CENTER_LEFT);
+    
+    FilteredList<Venta> filtro = new FilteredList<>(ventas);
+    
+    Label titulo = new Label("Filtrar por fecha ");
+    hb.getChildren().add(titulo);
+    
+    ComboBox<String> opciones = new ComboBox<>();
+    opciones.getItems().addAll("=", ">", "<");
+    opciones.setValue("=");
+    hb.getChildren().add(opciones);
+    
+    DatePicker fecha = new DatePicker();
+    fecha.setEditable(false);
+    fecha.setValue(LocalDate.now());
+    hb.getChildren().add(fecha);
+    
+    Button filtrar = new Button("Filtrar");
+    hb.getChildren().add(filtrar);
+    
+    Button restablecer = new Button("Restablecer");
+    restablecer.setOnAction((ActionEvent) -> {
+      opciones.setValue("=");
+      fecha.setValue(LocalDate.now());
+      restablecer.setVisible(false);
+      tablaVentas.setItems(ventas);
+    });
+    restablecer.setVisible(false);
+    hb.getChildren().add(restablecer);
+    
+    filtrar.setOnAction((ActionEvent) -> {
+      filtro.setPredicate(venta -> {
+        LocalDate fechaV = LocalDate.parse(venta.getFecha(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        switch(opciones.getSelectionModel().getSelectedItem()) {
+          case "=":
+            return fechaV.isEqual(fecha.getValue());
+          case ">":
+            return fechaV.isAfter(fecha.getValue());
+          case "<":
+            return fechaV.isBefore(fecha.getValue());
+        default:
+          mostrarError("Opci\u00F3n invalida");
+      }
+        return true;
+      });
+      tablaVentas.setItems(filtro);
+      restablecer.setVisible(true);
+    });
+    
+    return hb;
   }
   
 }

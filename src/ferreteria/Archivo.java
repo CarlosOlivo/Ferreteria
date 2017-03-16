@@ -32,7 +32,7 @@ import javafx.collections.ObservableList;
  * 
  * @author Carlos Olivo
  * @version 0.1
- * @param <T> Tipo.
+ * @param <T> Tipo de elementos a guardar.
  */
 public class Archivo<T> {
   

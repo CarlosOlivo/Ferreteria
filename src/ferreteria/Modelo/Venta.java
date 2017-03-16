@@ -17,6 +17,7 @@
 package ferreteria.Modelo;
 
 import static ferreteria.Util.obtenerFechaActual;
+import static ferreteria.Util.redondear;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -38,6 +39,8 @@ public class Venta implements Externalizable {
   private final SimpleStringProperty productos;
   private final SimpleIntegerProperty cantidad;
   private final SimpleDoubleProperty subtotal;
+  private final SimpleDoubleProperty iva;
+  private final SimpleDoubleProperty total;
   
   /**
    * Inicializa la clase Venta.
@@ -47,6 +50,8 @@ public class Venta implements Externalizable {
     productos = new SimpleStringProperty("");
     cantidad = new SimpleIntegerProperty(0);
     subtotal = new SimpleDoubleProperty(0);
+    iva = new SimpleDoubleProperty(0);
+    total = new SimpleDoubleProperty(0);
   }
   
   /**
@@ -55,19 +60,22 @@ public class Venta implements Externalizable {
    * @param productos Lista de productos.
    * @param cantidad Cantidad de productos.
    * @param subtotal Subtotal de la venta.
+   * @param iva IVA% de la venta.
    */
-  public Venta(int folio, String productos, int cantidad, double subtotal) {
+  public Venta(int folio, String productos, int cantidad, double subtotal, double iva) {
     this.folio = new SimpleIntegerProperty(folio);
     this.productos = new SimpleStringProperty(productos);
     this.cantidad = new SimpleIntegerProperty(cantidad);
     this.subtotal = new SimpleDoubleProperty(subtotal);
+    this.iva = new SimpleDoubleProperty(redondear(getSubtotal()*iva));
+    this.total = new SimpleDoubleProperty(redondear(getSubtotal()+getIVA()));
   }
 
   public int getFolio() {
     return folio.get();
   }
 
-  public void setFolio(int folio) {
+  private void setFolio(int folio) {
     this.folio.set(folio);
   }
   
@@ -75,7 +83,7 @@ public class Venta implements Externalizable {
     return fecha.get();
   }
 
-  public void setFecha(String fecha) {
+  private void setFecha(String fecha) {
     this.fecha.set(fecha);
   }
 
@@ -102,6 +110,22 @@ public class Venta implements Externalizable {
   public void setSubtotal(double subtotal) {
     this.subtotal.set(subtotal);
   }
+  
+  public double getIVA() {
+    return iva.get();
+  }
+
+  public void setIVA(double iva) {
+    this.iva.set(iva);
+  }
+  
+  public double getTotal() {
+    return total.get();
+  }
+
+  public void setTotal(double total) {
+    this.total.set(total);
+  }
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
@@ -110,14 +134,18 @@ public class Venta implements Externalizable {
     out.writeObject(getProductos());
     out.writeInt(getCantidad());
     out.writeDouble(getSubtotal());
+    out.writeDouble(getIVA());
+    out.writeDouble(getTotal());
   }
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     setFolio(in.readInt());
-    fecha.set((String) in.readObject());
+    setFecha((String) in.readObject());
     setProductos((String) in.readObject());
     setCantidad(in.readInt());
     setSubtotal(in.readDouble());
+    setIVA(in.readDouble());
+    setTotal(in.readDouble());
   }
 }

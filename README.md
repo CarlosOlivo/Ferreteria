@@ -18,9 +18,9 @@ Control de inventario de una ferreteria en Java.
   - [x] Eliminar productos
   - [x] Mostrar productos
 - Ventas
-  - Mostrar venta
-    - [ ] Por folio
-    - [ ] Por fecha
+  - Filtrar venta
+    - [x] Por fecha
+  - [x] Mostrar venta
   - [x] Vender producto
 - [x] JavaFX
 - [ ] Validaciones
