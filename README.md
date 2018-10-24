@@ -2,6 +2,12 @@
 
 Control de inventario de una ferreteria en Java.
 
+## Usuarios del sistema
+Rol | Usuario | Contraseña
+-- | -- | --
+Administrador | admin | admin
+Usuario | user | user
+
 ## TO-DO
 
 - Inventario
